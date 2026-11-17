@@ -270,6 +270,10 @@ export async function runCycle(trigger: "scheduler" | "manuale" = "scheduler") {
     const settings = await getSettings();
     if (settings.run_requested) await setSetting("run_requested", false);
     stats.ingest = await ingestAll();
+    const failing = await q<{ name: string; last_error: string; error_count: number }>(
+      `SELECT name, last_error, error_count FROM sources WHERE active AND error_count > 0 ORDER BY name`,
+    );
+    for (const f of failing) log(`fonte in errore: ${f.name} (${f.error_count}×) — ${f.last_error}`);
     stats.cluster = await clusterNewItems(settings);
     stats.generate = await generateBatch(settings);
     await q(`UPDATE job_runs SET finished_at=now(), status='ok', stats=$2::jsonb WHERE id=$1`, [run!.id, JSON.stringify(stats)]);
