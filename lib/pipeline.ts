@@ -236,7 +236,8 @@ export async function generateBatch(settings: Settings) {
   const candidates = await q<{ id: number }>(
     `SELECT e.id FROM events e
      WHERE e.status IN ('nuovo','in_attesa') AND e.priority >= $1
-       AND (e.independent_count >= $2 OR e.has_primary)
+       AND (e.independent_count >= $2 OR e.has_primary
+            OR (e.priority >= $1 + 5 AND EXISTS (SELECT 1 FROM items i JOIN sources s ON s.id=i.source_id WHERE i.event_id=e.id AND s.reliability >= 5)))
        AND e.last_seen > now() - interval '36 hours'
        AND NOT EXISTS (SELECT 1 FROM articles a WHERE a.event_id=e.id)
        AND (e.status='nuovo' OR e.updated_at < now() - interval '30 minutes')
@@ -281,6 +282,7 @@ export async function runCycle(trigger: "scheduler" | "manuale" = "scheduler") {
     for (const f of failing) log(`fonte in errore: ${f.name} (${f.error_count}×) — ${f.last_error}`);
     stats.cluster = await clusterNewItems(settings);
     stats.generate = await generateBatch(settings);
+    stats.articoli = await q1(`SELECT count(*) FILTER (WHERE status='pubblicato')::int AS pubblicati, count(*) FILTER (WHERE status='pronto')::int AS da_approvare FROM articles`);
     await q(`UPDATE job_runs SET finished_at=now(), status='ok', stats=$2::jsonb WHERE id=$1`, [run!.id, JSON.stringify(stats)]);
     log("ciclo completato", JSON.stringify(stats));
   } catch (e: any) {
