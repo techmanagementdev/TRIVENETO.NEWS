@@ -4,7 +4,7 @@ import { ago, Badge, Cat, Terr } from "@/components/Crm";
 import { imageUrl, renderMarkdown } from "@/lib/content";
 import { q, q1 } from "@/lib/db";
 import { CATEGORIES, TERRITORIES } from "@/lib/taxonomy";
-import { changeSlug, discardEvent, generateEvent, newImage, publishArticle, saveArticle, unpublishArticle } from "../../../actions";
+import { changeSlug, discardEvent, generateEvent, newImage, publishArticle, saveArticle, searchMoreSources, unpublishArticle } from "../../../actions";
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const id = Number((await params).id);
@@ -51,19 +51,22 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <form action={unpublishArticle}><input type="hidden" name="id" value={art.id} /><button className="danger" type="submit">Ritira</button></form>
           </>
         )}
+        <form action={searchMoreSources}><input type="hidden" name="event_id" value={id} /><button className="secondary" type="submit">🔎 Cerca altre testate</button></form>
         {ev.status !== "scartato" && (
           <form action={discardEvent}><input type="hidden" name="event_id" value={id} /><button className="danger" type="submit">Scarta evento</button></form>
         )}
       </div>
 
       <div className="panel">
-        <h2>Fonti ({items.length})</h2>
+        <h2>Fonti ({items.length}) <span className="small" style={{ fontWeight: 400 }}>· {ev.independent_count} indipendenti</span></h2>
+        {ev.enrich_note && <p className="small">{ev.enrich_note}{ev.enriched_at ? ` · ${ago(ev.enriched_at)}` : ""}</p>}
+        {items.length < 3 && !ev.enrich_note && <p className="small">Con «Cerca altre testate» il sistema cerca sul web altri giornali che riportano la stessa notizia e li aggiunge qui: l'articolo verrà scritto unendo tutte le fonti.</p>}
         <table className="t">
           <thead><tr><th>Testata</th><th>Titolo</th><th>Ora</th><th>Testo</th></tr></thead>
           <tbody>
             {items.map((i: any) => (
               <tr key={i.id}>
-                <td>{i.publisher || i.domain}<div className="small">{i.source_name}{i.is_primary ? " · primaria" : ""}</div></td>
+                <td>{i.publisher || i.domain}<div className="small">{i.source_name === "Ricerca web (altre testate)" ? "🔎 trovata con ricerca web" : i.source_name}{i.is_primary ? " · primaria" : ""}{i.reliability ? ` · affidabilità ${i.reliability}/5` : ""}</div></td>
                 <td><a href={i.url} target="_blank" rel="noopener nofollow" style={{ color: "var(--blue)" }}>{i.title}</a>{i.summary && <div className="small">{String(i.summary).slice(0, 220)}</div>}</td>
                 <td className="small">{ago(i.published_at)}</td>
                 <td className="small">{i.content_status === "ok" ? <span className="ok-text">scaricato</span> : i.content_status === "robots" ? "non consentito (robots)" : i.content_status}</td>

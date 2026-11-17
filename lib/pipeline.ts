@@ -1,5 +1,6 @@
 import { aiConfigured, generateArticle, monthSpendUsd, PROMPT_VERSION, type ArticleDraft, type SourceForAI } from "./ai";
 import { clusterNewItems } from "./cluster";
+import { enrichBatch } from "./corroborate";
 import { q, q1 } from "./db";
 import { fetchEventContents } from "./extract";
 import { pickImage } from "./images";
@@ -13,7 +14,7 @@ const log = (...a: unknown[]) => console.log(new Date().toISOString(), "[pipelin
 // ---------------- Raccolta ----------------
 
 export async function ingestAll(): Promise<{ sources: number; newItems: number; errors: number }> {
-  const sources = await q<SourceRow>(`SELECT * FROM sources WHERE active ORDER BY kind DESC, id`);
+  const sources = await q<SourceRow>(`SELECT * FROM sources WHERE active AND kind IN ('rss','gdelt') ORDER BY kind DESC, id`);
   let newItems = 0,
     errors = 0;
   // fonti RSS in parallelo (a gruppi), GDELT in sequenza (limite di frequenza)
@@ -82,6 +83,7 @@ async function buildSources(eventId: number): Promise<{ list: SourceForAI[]; ful
       url: r.url,
       text,
       primary: Boolean(r.is_primary),
+      reliability: r.reliability ?? 3,
     });
     if (list.length >= 6) break;
   }
@@ -289,6 +291,8 @@ export async function runCycle(trigger: "scheduler" | "manuale" = "scheduler") {
     );
     for (const f of failing) log(`fonte in errore: ${f.name} (${f.error_count}×) — ${f.last_error}`);
     stats.cluster = await clusterNewItems(settings);
+    const spentBefore = await monthSpendUsd();
+    if (spentBefore < settings.monthly_budget_usd) stats.ricerca = await enrichBatch(settings);
     stats.generate = await generateBatch(settings);
     stats.articoli = await q1(`SELECT count(*) FILTER (WHERE status='pubblicato')::int AS pubblicati, count(*) FILTER (WHERE status='pronto')::int AS da_approvare FROM articles`);
     await q(`UPDATE job_runs SET finished_at=now(), status='ok', stats=$2::jsonb WHERE id=$1`, [run!.id, JSON.stringify(stats)]);

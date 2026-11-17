@@ -8,6 +8,7 @@ import { q, q1 } from "@/lib/db";
 import { pickImage } from "@/lib/images";
 import { assertPublicUrl } from "@/lib/net";
 import { generateForEvent } from "@/lib/pipeline";
+import { enrichEvent } from "@/lib/corroborate";
 import { DEFAULT_SETTINGS, getSettings, setSetting, type PublishMode } from "@/lib/settings";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/session";
 import { CATEGORY_SLUGS, TERRITORY_SLUGS } from "@/lib/taxonomy";
@@ -107,7 +108,12 @@ export async function generateEvent(form: FormData) {
   const update = form.get("update") === "1";
   await q(`UPDATE events SET status='nuovo' WHERE id=$1 AND status IN ('scartato','errore','in_attesa')`, [id]);
   try {
-    const r = await generateForEvent(id, await getSettings(), { update });
+    const settings = await getSettings();
+    const ev = await q1<{ independent_count: number; enriched_at: Date | null }>(`SELECT independent_count, enriched_at FROM events WHERE id=$1`, [id]);
+    if (ev && ev.independent_count < 3 && (!ev.enriched_at || Date.now() - new Date(ev.enriched_at).getTime() > 30 * 60_000)) {
+      await enrichEvent(id, settings);
+    }
+    const r = await generateForEvent(id, settings, { update });
     if (r.outcome === "saltato" || r.outcome === "in_attesa") {
       await q(`UPDATE events SET status_note=$2 WHERE id=$1`, [id, `Generazione non eseguita: ${r.note}`]);
     }
@@ -329,4 +335,11 @@ export async function togglePlaceholders() {
   await setSetting("show_ad_placeholders", !s.show_ad_placeholders);
   revalidatePath("/admin/pubblicita");
   revalidatePath("/", "layout");
+}
+
+export async function searchMoreSources(form: FormData) {
+  await requireAdmin();
+  const id = num(form, "event_id");
+  await enrichEvent(id, await getSettings());
+  revalidatePath(`/admin/notizie/${id}`);
 }

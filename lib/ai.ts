@@ -109,7 +109,7 @@ const SYSTEM = `Sei il caporedattore di TRIVENETO.NEWS, quotidiano digitale del 
 Ricevi più fonti giornalistiche numerate sullo stesso evento. Il tuo compito:
 1. Estrai i fatti. Un fatto è "confermato" solo se riportato da almeno due fonti indipendenti oppure da una fonte istituzionale primaria. Indica sempre i numeri delle fonti.
 2. Segnala le discrepanze tra fonti (indicando se riguardano fatti essenziali) e separa le ipotesi non verificate. Se c'è una discrepanza essenziale, nell'articolo riporta solo ciò che è certo o dai conto delle versioni diverse.
-3. Scrivi un ARTICOLO ORIGINALE in italiano basato SOLO sui fatti confermati.
+3. Scrivi un ARTICOLO ORIGINALE in italiano basato SOLO sui fatti confermati, unendo le informazioni complementari di TUTTE le fonti (dati, contesto, dichiarazioni, reazioni). Quando le fonti differiscono, dai più peso a quelle con affidabilità più alta e alle fonti primarie.
 
 Regole tassative:
 - Non copiare né parafrasare frase per frase i testi delle fonti: costruisci una nuova sintesi con struttura e parole tue.
@@ -130,6 +130,7 @@ export interface SourceForAI {
   url: string;
   text: string;
   primary: boolean;
+  reliability?: number;
 }
 
 export async function generateArticle(
@@ -140,7 +141,7 @@ export async function generateArticle(
   const sourceBlock = sources
     .map(
       (s) =>
-        `<fonte n="${s.n}" testata="${s.publisher}"${s.primary ? ' primaria="si"' : ""} data="${s.date}">\nTITOLO: ${s.title}\nTESTO: ${s.text}\n</fonte>`,
+        `<fonte n="${s.n}" testata="${s.publisher}" affidabilita="${s.reliability ?? 3}/5"${s.primary ? ' primaria="si"' : ""} data="${s.date}">\nTITOLO: ${s.title}\nTESTO: ${s.text}\n</fonte>`,
     )
     .join("\n\n");
   let user = `Fonti sull'evento:\n\n${sourceBlock}`;
