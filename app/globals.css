@@ -227,3 +227,59 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; fo
 .ad-thumb img, .ad-thumb video { max-width: 100%; max-height: 100%; object-fit: contain; }
 .link-btn { background: none; border: 0; color: var(--blue); padding: 0; font-weight: 500; text-decoration: underline; }
 @media (max-width: 900px) { .ad-item { grid-template-columns: 64px minmax(0,1fr); } .ad-item .actions { grid-column: 1 / -1; } }
+
+/* ---------- Home rinnovata ---------- */
+.cat-politica { --cat: #0b3a7e; } .cat-economia { --cat: #0e6e7a; } .cat-attualita { --cat: #b4471f; }
+.cat-sostenibilita { --cat: #1f7a45; } .cat-tecnologia { --cat: #5a3fb5; }
+.kicker[class*="cat-"] { color: var(--cat); }
+.breaking { display: flex; align-items: center; gap: 0; margin: 14px 0 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: #fff; }
+.breaking-label { background: #c62828; color: #fff; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; padding: 9px 12px; white-space: nowrap; }
+.breaking-track { display: flex; gap: 28px; overflow-x: auto; white-space: nowrap; padding: 8px 14px; font-size: 14px; scrollbar-width: none; mask-image: linear-gradient(90deg, #000 92%, transparent); }
+.breaking-track a { font-weight: 600; }
+.breaking-track time { color: #c62828; font-size: 12px; font-weight: 700; margin-right: 4px; }
+.top-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr); gap: 28px; margin-top: 22px; }
+.top-grid .lead h1 { font-size: clamp(26px, 3vw, 38px); }
+.top-grid .lead .thumb { aspect-ratio: 16/10; }
+.top-grid .second { display: grid; gap: 22px; align-content: start; }
+.top-grid .second h3 { font-family: var(--serif); font-size: 19px; line-height: 1.25; margin: 6px 0 4px; }
+.top-grid .second .kicker { margin-top: 10px; }
+.timeline ol { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--blue-soft); }
+.timeline li { position: relative; padding: 0 0 14px 8px; font-size: 15px; line-height: 1.35; }
+.timeline li::before { content: ""; position: absolute; left: -21px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid var(--blue); }
+.timeline time { display: block; font-size: 12px; font-weight: 700; color: var(--blue); }
+.timeline a { font-weight: 500; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 26px 0 6px; }
+.chips a { border: 1px solid var(--line); background: var(--bg-soft); padding: 7px 14px; border-radius: 20px; font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+.chips a:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.cat-block .section-title { border-bottom-color: var(--cat, var(--ink)); }
+.cat-block .section-title > span { color: var(--cat, var(--blue)); }
+.cat-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 28px; }
+.card.big h3 { font-size: 26px; }
+.cat-list { display: grid; gap: 14px; align-content: start; }
+.compact { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: start; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.compact:last-child { border-bottom: 0; }
+.compact .thumb { aspect-ratio: 4/3; }
+.compact b { display: block; font-family: var(--serif); font-size: 17px; line-height: 1.3; margin: 3px 0; font-weight: 700; }
+.compact time { font-size: 12px; color: var(--muted); }
+.regions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+.region-col { background: var(--bg-soft); border-radius: 8px; padding: 14px 16px; }
+.region-head { display: block; font-weight: 800; color: var(--blue); font-size: 15px; margin-bottom: 8px; }
+.region-col ul { list-style: none; margin: 0; padding: 0; }
+.region-col li { padding: 7px 0; border-top: 1px solid var(--line); font-family: var(--serif); font-size: 15px; line-height: 1.3; }
+.popular { list-style: none; counter-reset: pop; margin: 0; padding: 0; }
+.popular li { counter-increment: pop; display: grid; grid-template-columns: 44px 1fr; gap: 6px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--line); font-family: var(--serif); font-size: 17px; line-height: 1.3; }
+.popular li::before { content: counter(pop); font-family: var(--serif); font-size: 32px; line-height: 1; font-weight: 700; color: #c9d4e6; }
+/* riquadri pubblicitari vuoti più discreti */
+.ad-placeholder { min-height: 56px; flex-direction: row; gap: 10px; font-size: 12px; }
+.ad-placeholder b { font-size: 12px; font-weight: 600; }
+.ad-placeholder.tall { min-height: 160px; flex-direction: column; }
+@media (max-width: 1000px) {
+  .top-grid { grid-template-columns: 1fr 1fr; }
+  .top-grid .lead { grid-column: 1 / -1; }
+  .regions { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .top-grid, .cat-grid, .regions { grid-template-columns: 1fr; }
+  .compact { grid-template-columns: 96px minmax(0, 1fr); }
+  .card.big h3 { font-size: 22px; }
+}

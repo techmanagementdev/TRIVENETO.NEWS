@@ -8,7 +8,7 @@ export default async function AdSlot({ placement }: { placement: string }) {
   const [ad, settings] = await Promise.all([pickAd(placement).catch(() => null), getSettings().catch(() => null)]);
   const tall = TALL.includes(placement);
   if (!ad) {
-    if (!settings?.show_ad_placeholders) return null;
+    if (!settings?.show_ad_placeholders || placement === "header" || placement === "footer") return null;
     const p = PLACEMENTS.find((x) => x.slug === placement);
     return (
       <div className={`ad ad-${placement}`}>
