@@ -39,12 +39,19 @@ export default async function Home() {
   const second = rest.slice(0, 2);
   const timeline = (rest.length > 2 ? rest.slice(2) : news).slice(0, 8);
   const [cats, regions, europe, popular] = await Promise.all([
-    Promise.all(CATEGORIES.map(async (c) => ({ c, items: await byCategory(c.slug, 4) }))),
+    Promise.all(CATEGORIES.map(async (c) => ({ c, items: await byCategory(c.slug, 7) }))),
     Promise.all(TERRITORIES.filter((t) => t.local).map(async (t) => ({ t, items: await byTerritory(t.slug, 4) }))),
     byTerritory(["europa", "mondo"], 4),
     mostRead(7, 5),
   ]);
-  const filledCats = cats.filter((x) => x.items.length);
+  // evita di ripetere nelle sezioni le notizie già in apertura (se ce ne sono altre)
+  const shown = new Set([lead.id, ...second.map((a) => a.id)]);
+  const filledCats = cats
+    .map(({ c, items }) => {
+      const fresh = items.filter((a) => !shown.has(a.id));
+      return { c, items: fresh.length ? fresh : items };
+    })
+    .filter((x) => x.items.length);
 
   return (
     <div className="home">
@@ -119,7 +126,7 @@ export default async function Home() {
                 <div className="meta">{geo(items[0])} · {fmtRelative(items[0].published_at)}</div>
               </article>
               <div className="cat-list">
-                {items.slice(1).map((a) => <Compact key={a.id} a={a} />)}
+                {items.slice(1, 4).map((a) => <Compact key={a.id} a={a} />)}
                 {items.length === 1 && <p className="small">Altre notizie di {c.name.toLowerCase()} in arrivo.</p>}
               </div>
             </div>
