@@ -1,6 +1,8 @@
 # Stato di avanzamento — TRIVENETO.NEWS
 
-_Aggiornato: 17/11/2026 (sessione 1)_
+_Aggiornato: 17/11/2026 06:50 (sessione 1)_
+
+Situazione alle 06:50: 6 articoli online, 6 da approvare nel CRM, nessun errore. Dominio non ancora verificato (DNS da inserire).
 
 ## Infrastruttura
 - GitHub: `techmanagementdev/TRIVENETO.NEWS` (branch `main`, CI GitHub Actions verde)
@@ -35,6 +37,8 @@ _Aggiornato: 17/11/2026 (sessione 1)_
 - Parole chiave sensibili ampliate (minacce, bombe, attentati, feriti, scomparse…): sempre in revisione
 
 - Aggiornamento notizie: alle 06, 12 e 18 (ora italiana), modificabile in Impostazioni; prezzi AI per la stima costi aggiornati a 2/10 $ per milione di token
+
+- Notizie importanti da una sola fonte ANSA (affidabilità 5): vengono scritte ma restano sempre in revisione; se l'AI non scrive il testo, l'evento va «in attesa» di altre fonti
 
 ## Problemi aperti / da fare
 - Repository da rendere privato (impostazione GitHub non modificabile da Claude in questo ambiente)
