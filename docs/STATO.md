@@ -31,7 +31,13 @@ _Aggiornato: 17/11/2026 (sessione 1)_
 ## Problemi aperti / da fare
 - Chiave Claude API da configurare sul servizio `worker` e `web` (`ANTHROPIC_API_KEY`)
 - Repository da rendere privato (impostazione GitHub non modificabile da Claude in questo ambiente)
-- Dominio `triveneto.news`: aggiungere su Railway e impostare i record DNS (serve l'ok del proprietario), poi aggiornare `SITE_URL`
+- Dominio: `triveneto.news` e `www.triveneto.news` aggiunti su Railway (17/11). In attesa dei record DNS presso il registrar:
+  - CNAME `triveneto.news` → `ctodb0kb.up.railway.app` (se il registrar non ammette CNAME sulla radice: ALIAS/ANAME/flattening)
+  - TXT `_railway-verify` → `railway-verify=b373bcc6c39005ef52bba829d690f24ce771aaf111d8da47a00a3ec97c01fd09`
+  - CNAME `www` → `qwhlcsma.up.railway.app`
+  - TXT `_railway-verify.www` → `railway-verify=7f93f8c016ce750e82df16a894c3a21094142ea011f66c473eb3db8d71f7b9df`
+  - Dopo l'attivazione: impostare `SITE_URL=https://triveneto.news` su web e worker
+- Nessuna chiave Anthropic trovata negli altri progetti Railway (17/11): va inserita dal proprietario
 - `PUBLISHER_INFO` (editore, direttore responsabile, registrazione) da fornire
 - Fonti disattivate: Il Piccolo (404), Parlamento europeo (403, blocca i bot). GDELT a volte risponde lentamente o con 429
 - Backup: affidati ai backup del servizio Postgres di Railway (verificare il piano); nessun backup applicativo separato
