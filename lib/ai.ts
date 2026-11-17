@@ -36,6 +36,7 @@ export const ArticleSchema = z.object({
   tag: z.array(z.string()).transform((t) => t.slice(0, 8)),
   fatti_confermati: z.array(z.object({ fatto: z.string(), fonti: z.array(z.number()) })),
   discrepanze: z.array(z.string()),
+  discrepanze_essenziali: z.boolean().optional().default(false),
   ipotesi_non_verificate: z.array(z.string()),
   titolo: z.string().min(10),
   sommario: z.string().min(20),
@@ -81,7 +82,11 @@ const TOOL: Anthropic.Tool = {
         type: "array",
         items: { type: "object", properties: { fatto: { type: "string" }, fonti: { type: "array", items: { type: "number" } } }, required: ["fatto", "fonti"] },
       },
-      discrepanze: { type: "array", items: { type: "string" } },
+      discrepanze: { type: "array", items: { type: "string" }, description: "tutte le differenze tra fonti, anche minori" },
+      discrepanze_essenziali: {
+        type: "boolean",
+        description: "true SOLO se le fonti si contraddicono su un fatto essenziale (chi, cosa, quando, dove, cifre principali, esito). Differenze di dettaglio, di formulazione, orari approssimativi o informazioni presenti in una sola fonte NON sono essenziali.",
+      },
       ipotesi_non_verificate: { type: "array", items: { type: "string" } },
       titolo: { type: "string", description: "titolo originale, informativo, massimo 100 caratteri, niente clickbait" },
       sommario: { type: "string", description: "2 frasi" },
@@ -93,7 +98,7 @@ const TOOL: Anthropic.Tool = {
       query_immagine: { type: "string", description: "2-4 parole per cercare su Wikimedia Commons una foto di repertorio del luogo o del tema (es. 'Trento Piazza Duomo', 'solar panels Alps')" },
     },
     required: [
-      "pubblicabile", "sensibile", "impatto_triveneto", "motivazione_impatto", "categoria", "territori", "tag", "fatti_confermati",
+      "pubblicabile", "discrepanze_essenziali", "sensibile", "impatto_triveneto", "motivazione_impatto", "categoria", "territori", "tag", "fatti_confermati",
       "discrepanze", "ipotesi_non_verificate", "titolo", "sommario", "corpo_markdown", "meta_title", "meta_description", "slug",
       "testo_social", "query_immagine",
     ],
@@ -103,7 +108,7 @@ const TOOL: Anthropic.Tool = {
 const SYSTEM = `Sei il caporedattore di TRIVENETO.NEWS, quotidiano digitale del Nord-Est italiano (Trentino-Alto Adige, Veneto, Friuli-Venezia Giulia, Emilia-Romagna).
 Ricevi più fonti giornalistiche numerate sullo stesso evento. Il tuo compito:
 1. Estrai i fatti. Un fatto è "confermato" solo se riportato da almeno due fonti indipendenti oppure da una fonte istituzionale primaria. Indica sempre i numeri delle fonti.
-2. Segnala le discrepanze tra fonti e separa le ipotesi non verificate.
+2. Segnala le discrepanze tra fonti (indicando se riguardano fatti essenziali) e separa le ipotesi non verificate. Se c'è una discrepanza essenziale, nell'articolo riporta solo ciò che è certo o dai conto delle versioni diverse.
 3. Scrivi un ARTICOLO ORIGINALE in italiano basato SOLO sui fatti confermati.
 
 Regole tassative:

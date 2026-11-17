@@ -152,6 +152,7 @@ export async function generateForEvent(eventId: number, settings: Settings, opts
     motivazione_impatto: draft.motivazione_impatto,
     fatti_confermati: draft.fatti_confermati,
     discrepanze: draft.discrepanze,
+    discrepanze_essenziali: draft.discrepanze_essenziali,
     ipotesi: draft.ipotesi_non_verificate,
     sensibile: draft.sensibile,
     motivo_sensibile: draft.motivo_sensibile,
@@ -172,7 +173,7 @@ export async function generateForEvent(eventId: number, settings: Settings, opts
   const reasons: string[] = [];
   if (!draft.pubblicabile) reasons.push(`Non pubblicabile secondo l'analisi: ${draft.motivo_non_pubblicabile || "fatti non confermati"}`);
   if (draft.sensibile || ev.sensitive) reasons.push(`Tema sensibile: ${draft.motivo_sensibile || "parole chiave sensibili"}`);
-  if (draft.discrepanze.length) reasons.push(`Discrepanze tra fonti (${draft.discrepanze.length})`);
+  if (draft.discrepanze_essenziali) reasons.push(`Discrepanze tra fonti su fatti essenziali (${draft.discrepanze.length})`);
   if (sim > settings.similarity_max) reasons.push(`Testo troppo simile a una fonte (${Math.round(sim * 100)}%)`);
   if (ev.independent_count < settings.min_independent_sources && !ev.has_primary) reasons.push(`Solo ${ev.independent_count} fonte indipendente`);
   const dup = await possibleDuplicate(draft.titolo, draft.corpo_markdown, eventId);
@@ -216,6 +217,7 @@ export async function generateForEvent(eventId: number, settings: Settings, opts
   );
   await q(`UPDATE events SET status='generato', status_note=NULL, analysis=$2::jsonb, updated_at=now() WHERE id=$1`, [eventId, JSON.stringify(analysis)]);
   log(`articolo ${status}`, slug, reasons.length ? `(${reasons.join("; ")})` : "");
+  log(`  ↳ ${draft.categoria} | ${draft.territori.join(",")} | fonti ${list.length} | somiglianza ${Math.round(sim * 100)}% | immagine ${image.kind} | ${draft.titolo} — ${draft.sommario.slice(0, 200)}`);
   return { outcome: "creato", articleId: r[0].id, note: status };
 }
 
