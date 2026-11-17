@@ -14,6 +14,7 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
           <Link href="/admin">Dashboard</Link>
           <Link href="/admin/notizie">Notizie</Link>
           <Link href="/admin/articoli">Articoli</Link>
+          <Link href="/admin/pubblicita">Pubblicità</Link>
           <Link href="/admin/fonti">Fonti</Link>
           <Link href="/admin/statistiche">Statistiche</Link>
           <Link href="/admin/messaggi">Messaggi</Link>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AdSlot from "@/components/AdSlot";
 import CookieConsent from "@/components/CookieConsent";
 import { CATEGORIES, TERRITORIES } from "@/lib/taxonomy";
 import { fmtDate } from "@/lib/content";
@@ -33,9 +34,12 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             <Link key={t.slug} className="region" href={`/territorio/${t.slug}`}>{t.name}</Link>
           ))}
           <Link className="region" href="/territorio/europa">Europa e mondo</Link>
+          <Link className="nav-search" href="/cerca" aria-label="Cerca">⌕ Cerca</Link>
         </div>
       </nav>
+      <div className="wrap"><AdSlot placement="header" /></div>
       <main className="wrap">{children}</main>
+      <div className="wrap"><AdSlot placement="footer" /></div>
       <footer className="footer">
         <div className="wrap cols">
           <div>

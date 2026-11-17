@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, Empty, Section, Thumb } from "@/components/ArticleBits";
-import { articlePath, byCategory, byTerritory, fmtTime, latest, mostRead } from "@/lib/content";
+import AdSlot from "@/components/AdSlot";
+import { articlePath, byCategory, byTerritory, fmtRelative, latest, mostRead } from "@/lib/content";
 import { CATEGORIES, categoryName, TERRITORIES } from "@/lib/taxonomy";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export default async function Home() {
   if (!news.length) {
     return <div style={{ margin: "40px 0" }}><Empty>Il giornale è in avvio: i primi articoli verificati compariranno qui a breve.</Empty></div>;
   }
+  // con pochi articoli la colonna "ultime notizie" mostra anche quelli già in apertura
   const [lead, ...rest] = news;
   const [cats, regions, europe, popular] = await Promise.all([
     Promise.all(CATEGORIES.map(async (c) => ({ c, items: await byCategory(c.slug, 4) }))),
@@ -32,21 +34,28 @@ export default async function Home() {
         <aside className="latest">
           <h2 className="section-title"><span>Ultime notizie</span></h2>
           <ul>
-            {rest.slice(0, 9).map((a) => (
+            {(rest.length ? rest : news).slice(0, 9).map((a) => (
               <li key={a.id}>
-                <time>{fmtTime(a.published_at)}</time>
+                <time>{fmtRelative(a.published_at)}</time>
                 <Link href={articlePath(a.slug)}>{a.title}</Link>
               </li>
             ))}
           </ul>
+          <AdSlot placement="home_sidebar" />
         </aside>
       </div>
 
-      {cats.filter((x) => x.items.length).map(({ c, items }) => (
-        <Section key={c.slug} title={c.name} href={`/categoria/${c.slug}`}>
-          <div className="cards">{items.map((a) => <Card key={a.id} a={a} />)}</div>
-        </Section>
+      <AdSlot placement="home_top" />
+
+      {cats.filter((x) => x.items.length).map(({ c, items }, i) => (
+        <div key={c.slug}>
+          <Section title={c.name} href={`/categoria/${c.slug}`}>
+            <div className="cards">{items.map((a) => <Card key={a.id} a={a} />)}</div>
+          </Section>
+          {i === 1 && <AdSlot placement="home_middle" />}
+        </div>
       ))}
+      {cats.filter((x) => x.items.length).length < 2 && <AdSlot placement="home_middle" />}
 
       <div className="two-col">
         {regions.filter((x) => x.items.length).map(({ t, items }) => (

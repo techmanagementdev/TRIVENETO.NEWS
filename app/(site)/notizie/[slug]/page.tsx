@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ArticleBits";
 import ViewTracker from "@/components/ViewTracker";
-import { absoluteImageUrl, articlePath, fmtDate, getArticle, imageUrl, related, renderMarkdown, siteUrl } from "@/lib/content";
+import AdSlot from "@/components/AdSlot";
+import { absoluteImageUrl, articlePath, fmtDate, fmtRelative, getArticle, imageUrl, latest, readingMinutes, related, renderMarkdown, siteUrl, splitAfterParagraph } from "@/lib/content";
 import { categoryName, territoryName } from "@/lib/taxonomy";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,8 @@ export default async function ArticlePage({ params }: P) {
   const { slug } = await params;
   const a = await getArticle(slug);
   if (!a) notFound();
-  const rel = await related(a, 4);
+  const [rel, recent] = await Promise.all([related(a, 4), latest(6)]);
+  const [bodyA, bodyB] = splitAfterParagraph(renderMarkdown(a.body_md), 2);
   const url = siteUrl() + articlePath(a.slug);
   const updated = new Date(a.updated_at).getTime() - new Date(a.published_at).getTime() > 10 * 60_000;
   const jsonLd = [
@@ -71,6 +73,7 @@ export default async function ArticlePage({ params }: P) {
   const share = encodeURIComponent(url);
   return (
     <>
+      <div className="article-layout">
       <article className="article">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
         <nav className="meta" aria-label="Percorso">
@@ -82,7 +85,7 @@ export default async function ArticlePage({ params }: P) {
         <h1>{a.title}</h1>
         <p className="standfirst">{a.summary}</p>
         <div className="meta">
-          Redazione TRIVENETO.NEWS · <time dateTime={new Date(a.published_at).toISOString()}>{fmtDate(a.published_at)}</time>
+          Redazione TRIVENETO.NEWS · {readingMinutes(a.body_md)} min di lettura · <time dateTime={new Date(a.published_at).toISOString()}>{fmtDate(a.published_at)}</time>
           {updated && <> · aggiornato {fmtDate(a.updated_at)}</>}
         </div>
         <figure>
@@ -97,7 +100,10 @@ export default async function ArticlePage({ params }: P) {
           )}
         </figure>
         {a.update_note && updated && <div className="update-note">{a.update_note} — {fmtDate(a.updated_at)}</div>}
-        <div className="prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(a.body_md) }} />
+        <div className="prose" dangerouslySetInnerHTML={{ __html: bodyA }} />
+        {bodyB && <AdSlot placement="article_inline" />}
+        {bodyB && <div className="prose" dangerouslySetInnerHTML={{ __html: bodyB }} />}
+        <AdSlot placement="article_bottom" />
         <section className="sources-box">
           <h2>Fonti</h2>
           <ol>
@@ -124,6 +130,18 @@ export default async function ArticlePage({ params }: P) {
         </p>
         <ViewTracker id={a.id} />
       </article>
+      <aside className="article-side">
+        <AdSlot placement="article_sidebar" />
+        <div className="latest side-box">
+          <h2 className="section-title"><span>Ultime notizie</span></h2>
+          <ul>
+            {recent.filter((r) => r.id !== a.id).slice(0, 5).map((r) => (
+              <li key={r.id}><time>{fmtRelative(r.published_at)}</time><Link href={articlePath(r.slug)}>{r.title}</Link></li>
+            ))}
+          </ul>
+        </div>
+      </aside>
+      </div>
       {rel.length > 0 && (
         <section className="section">
           <h2 className="section-title"><span>Leggi anche</span></h2>

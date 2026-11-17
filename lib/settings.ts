@@ -18,6 +18,7 @@ export interface Settings {
   category_weights: Record<string, number>;
   cluster_threshold: number;
   run_requested: boolean;
+  show_ad_placeholders: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -44,6 +45,7 @@ export const DEFAULT_SETTINGS: Settings = {
   category_weights: { politica: 1, economia: 1, attualita: 0.8, sostenibilita: 1, tecnologia: 1 },
   cluster_threshold: 0.32,
   run_requested: false,
+  show_ad_placeholders: true,
 };
 
 export async function getSettings(): Promise<Settings> {

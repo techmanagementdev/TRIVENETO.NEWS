@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { articlePath, fmtDate, imageUrl, type ArticleCard } from "@/lib/content";
-import { categoryName } from "@/lib/taxonomy";
+import { articlePath, fmtDate, fmtRelative, imageUrl, type ArticleCard } from "@/lib/content";
+import { categoryName, territoryName } from "@/lib/taxonomy";
 
 export function Thumb({ a, eager = false }: { a: ArticleCard; eager?: boolean }) {
   return (
@@ -16,10 +16,11 @@ export function Card({ a }: { a: ArticleCard }) {
     <article className="card">
       <Link href={articlePath(a.slug)}>
         <Thumb a={a} />
-        <div className="kicker" style={{ marginTop: 10 }}>{categoryName(a.category)}</div>
+        <div className="kicker" style={{ marginTop: 10 }}>{categoryName(a.category)}{a.territories[0] && <span className="kicker-geo"> · {territoryName(a.territories[0])}</span>}</div>
         <h3>{a.title}</h3>
       </Link>
       <p>{a.summary}</p>
+      <div className="meta" style={{ marginTop: 6 }}><time dateTime={new Date(a.published_at).toISOString()}>{fmtRelative(a.published_at)}</time></div>
     </article>
   );
 }
@@ -29,10 +30,10 @@ export function Row({ a }: { a: ArticleCard }) {
     <article className="list-row">
       <Link href={articlePath(a.slug)}><Thumb a={a} /></Link>
       <div>
-        <div className="kicker">{categoryName(a.category)}</div>
+        <div className="kicker">{categoryName(a.category)}{a.territories[0] && <span className="kicker-geo"> · {territoryName(a.territories[0])}</span>}</div>
         <h2><Link href={articlePath(a.slug)}>{a.title}</Link></h2>
         <p>{a.summary}</p>
-        <div className="meta"><time dateTime={new Date(a.published_at).toISOString()}>{fmtDate(a.published_at)}</time></div>
+        <div className="meta"><time dateTime={new Date(a.published_at).toISOString()} title={fmtDate(a.published_at)}>{fmtRelative(a.published_at)}</time></div>
       </div>
     </article>
   );

@@ -2,6 +2,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { ALLOWED_MIME, PLACEMENT_SLUGS, youtubeId } from "@/lib/ads";
 import { checkCredentials, loginAllowed, loginFailed, loginOk, requireAdmin } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { pickImage } from "@/lib/images";
@@ -204,4 +205,125 @@ export async function markMessage(form: FormData) {
   await requireAdmin();
   await q(`UPDATE messages SET status=$2 WHERE id=$1`, [num(form, "id"), str(form, "status") === "gestito" ? "gestito" : "nuovo"]);
   revalidatePath("/admin/messaggi");
+}
+
+// ---------- Gestione rapida articoli ----------
+export async function articlesAction(form: FormData) {
+  await requireAdmin();
+  // pulsante su una singola riga: "op" = "publish:ID" | "unpublish:ID" | "delete:ID"
+  // pulsanti di gruppo: "bulk" = publish | unpublish | delete, con ids selezionati
+  const one = String(form.get("op") ?? "");
+  let op = String(form.get("bulk") ?? "");
+  let ids = form.getAll("ids").map(Number).filter((n) => Number.isInteger(n) && n > 0);
+  if (one) {
+    const [o, id] = one.split(":");
+    op = o;
+    ids = [Number(id)];
+  }
+  if (!ids.length) return;
+  if (op === "publish") {
+    await q(`UPDATE articles SET status='pubblicato', needs_review=false, published_at=COALESCE(published_at, now()), updated_at=now() WHERE id = ANY($1)`, [ids]);
+  } else if (op === "unpublish") {
+    await q(`UPDATE articles SET status='ritirato', updated_at=now() WHERE id = ANY($1)`, [ids]);
+  } else if (op === "delete") {
+    const ev = await q<{ event_id: number }>(`DELETE FROM articles WHERE id = ANY($1) RETURNING event_id`, [ids]);
+    const evIds = ev.map((e) => e.event_id).filter(Boolean);
+    if (evIds.length) await q(`UPDATE events SET status='scartato', status_note='Articolo eliminato dalla redazione' WHERE id = ANY($1)`, [evIds]);
+  }
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+}
+
+// ---------- Pubblicità ----------
+
+function sniffOk(mime: string, b: Buffer) {
+  const hex = b.subarray(0, 12).toString("hex");
+  if (mime === "image/png") return hex.startsWith("89504e47");
+  if (mime === "image/jpeg") return hex.startsWith("ffd8ff");
+  if (mime === "image/gif") return hex.startsWith("474946");
+  if (mime === "image/webp") return hex.startsWith("52494646") && b.subarray(8, 12).toString() === "WEBP";
+  if (mime === "video/mp4") return b.subarray(4, 8).toString() === "ftyp";
+  if (mime === "video/webm") return hex.startsWith("1a45dfa3");
+  return false;
+}
+
+export interface AdFormState { error?: string; ok?: boolean }
+
+export async function saveAd(_: AdFormState, form: FormData): Promise<AdFormState> {
+  await requireAdmin();
+  const id = num(form, "id") || null;
+  const title = str(form, "title", 120);
+  const placement = str(form, "placement");
+  const link = str(form, "link_url", 1000);
+  const videoUrl = str(form, "video_url", 1000);
+  if (!title) return { error: "Indica un nome per l'annuncio." };
+  if (!PLACEMENT_SLUGS.includes(placement)) return { error: "Scegli una posizione." };
+  if (link && !/^https?:\/\/\S+$/.test(link)) return { error: "Il link deve iniziare con https://" };
+
+  let mediaId: number | null = null;
+  let kind: "image" | "video" | "youtube" | null = null;
+  const file = form.get("file");
+  if (file && typeof file !== "string" && file.size > 0) {
+    const mime = file.type;
+    const max = ALLOWED_MIME[mime];
+    if (!max) return { error: "Formato non supportato. Usa PNG, JPG, WEBP, GIF, MP4 o WEBM." };
+    if (file.size > max) return { error: `File troppo grande (massimo ${Math.round(max / 1_000_000)} MB per questo formato).` };
+    const buf = Buffer.from(await file.arrayBuffer());
+    if (!sniffOk(mime, buf)) return { error: "Il contenuto del file non corrisponde al formato dichiarato." };
+    const r = await q<{ id: number }>(`INSERT INTO media (filename, mime, size, data) VALUES ($1,$2,$3,$4) RETURNING id`, [
+      file.name.slice(0, 200), mime, buf.length, buf,
+    ]);
+    mediaId = r[0].id;
+    kind = mime.startsWith("video/") ? "video" : "image";
+  } else if (videoUrl) {
+    if (youtubeId(videoUrl)) kind = "youtube";
+    else if (/^https:\/\/\S+\.(mp4|webm)(\?\S*)?$/i.test(videoUrl)) kind = "video";
+    else return { error: "Link video non valido: usa un link YouTube o un file .mp4/.webm." };
+  }
+
+  const startsAt = str(form, "starts_at") || null;
+  const endsAt = str(form, "ends_at") || null;
+  const weight = Math.min(10, Math.max(1, num(form, "weight") || 1));
+  const vals = [title, str(form, "advertiser", 120) || null, placement, link || null, str(form, "alt", 200) || null, weight, startsAt, endsAt, form.get("active") === "on"];
+
+  if (id) {
+    await q(
+      `UPDATE ads SET title=$2, advertiser=$3, placement=$4, link_url=$5, alt=$6, weight=$7, starts_at=$8, ends_at=$9, active=$10, updated_at=now()
+         ${kind ? ", kind=$11, media_id=$12, video_url=$13" : ""} WHERE id=$1`,
+      kind ? [id, ...vals, kind, mediaId, mediaId ? null : videoUrl] : [id, ...vals],
+    );
+  } else {
+    if (!kind) return { error: "Carica un'immagine, GIF o video, oppure indica un link video." };
+    await q(
+      `INSERT INTO ads (title, advertiser, placement, link_url, alt, weight, starts_at, ends_at, active, kind, media_id, video_url)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [...vals, kind, mediaId, mediaId ? null : videoUrl],
+    );
+  }
+  await q(`DELETE FROM media m WHERE NOT EXISTS (SELECT 1 FROM ads a WHERE a.media_id = m.id) AND created_at < now() - interval '1 hour'`);
+  revalidatePath("/admin/pubblicita");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function adAction(form: FormData) {
+  await requireAdmin();
+  const [op, idStr] = String(form.get("op") ?? "").split(":");
+  const id = Number(idStr);
+  if (!id) return;
+  if (op === "toggle") await q(`UPDATE ads SET active = NOT active, updated_at=now() WHERE id=$1`, [id]);
+  if (op === "delete") {
+    const r = await q1<{ media_id: number | null }>(`DELETE FROM ads WHERE id=$1 RETURNING media_id`, [id]);
+    if (r?.media_id) await q(`DELETE FROM media WHERE id=$1 AND NOT EXISTS (SELECT 1 FROM ads WHERE media_id=$1)`, [r.media_id]);
+  }
+  revalidatePath("/admin/pubblicita");
+  revalidatePath("/", "layout");
+}
+
+export async function togglePlaceholders() {
+  await requireAdmin();
+  const s = await getSettings();
+  await setSetting("show_ad_placeholders", !s.show_ad_placeholders);
+  revalidatePath("/admin/pubblicita");
+  revalidatePath("/", "layout");
 }

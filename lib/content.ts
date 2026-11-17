@@ -104,3 +104,24 @@ export function fmtTime(d: Date | string) {
 export function articlePath(slug: string) {
   return `/notizie/${slug}`;
 }
+
+export function fmtRelative(d: Date | string) {
+  const m = Math.round((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 1) return "adesso";
+  if (m < 60) return `${m} min fa`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return h === 1 ? "1 ora fa" : `${h} ore fa`;
+  return fmtDate(d, false);
+}
+export function readingMinutes(md: string) {
+  return Math.max(1, Math.round(md.split(/\s+/).length / 200));
+}
+/** Divide l'HTML dopo il paragrafo n-esimo (per inserire un annuncio nel testo). */
+export function splitAfterParagraph(html: string, n: number): [string, string] {
+  let idx = -1;
+  for (let i = 0; i < n; i++) {
+    idx = html.indexOf("</p>", idx + 1);
+    if (idx === -1) return [html, ""];
+  }
+  return [html.slice(0, idx + 4), html.slice(idx + 4)];
+}

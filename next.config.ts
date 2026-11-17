@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   serverExternalPackages: ["pg", "linkedom", "@mozilla/readability", "rss-parser"],
   images: { unoptimized: true },
+  experimental: { serverActions: { bodySizeLimit: "25mb" }, middlewareClientMaxBodySize: "25mb" },
   async headers() {
     return [
       {

@@ -3,7 +3,7 @@ import { ago, Badge, Cat } from "@/components/Crm";
 import { aiConfigured, monthSpendUsd } from "@/lib/ai";
 import { q, q1 } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
-import { requestRun } from "../actions";
+import { articlesAction, requestRun } from "../actions";
 
 export default async function Dashboard() {
   const [k, last, runs, toReview, settings, spend, srcErr] = await Promise.all([
@@ -51,7 +51,7 @@ export default async function Dashboard() {
       </div>
 
       <div className="panel">
-        <h2>Da revisionare</h2>
+        <h2 style={{ display: "flex", justifyContent: "space-between" }}><span>Da revisionare</span><Link className="small" href="/admin/articoli?stato=pronto">Gestisci tutti →</Link></h2>
         {toReview.length === 0 ? <p className="small">Nessun articolo in attesa.</p> : (
           <table className="t">
             <thead><tr><th>Articolo</th><th>Categoria</th><th>Stato</th><th>Motivi</th><th></th></tr></thead>
@@ -62,7 +62,12 @@ export default async function Dashboard() {
                   <td><Cat c={a.category} /></td>
                   <td><Badge s={a.status} /></td>
                   <td className="small">{a.review_reasons.length ? a.review_reasons.join(" · ") : "Controlli superati"}</td>
-                  <td><Link className="btn secondary" href={`/admin/notizie/${a.event_id}`}>Apri</Link></td>
+                  <td>
+                    <form action={articlesAction} className="actions">
+                      <button type="submit" name="op" value={`publish:${a.id}`} className="ok">Pubblica</button>
+                      <Link className="btn secondary" href={`/admin/notizie/${a.event_id}`}>Apri</Link>
+                    </form>
+                  </td>
                 </tr>
               ))}
             </tbody>
