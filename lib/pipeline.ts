@@ -18,7 +18,10 @@ export async function ingestAll(): Promise<{ sources: number; newItems: number; 
     errors = 0;
   // fonti RSS in parallelo (a gruppi), GDELT in sequenza (limite di frequenza)
   const rss = sources.filter((s) => s.kind === "rss");
-  const gd = sources.filter((s) => s.kind === "gdelt");
+  // GDELT limita molto la frequenza: al massimo una consultazione all'ora per query
+  const gd = sources.filter(
+    (s: any) => s.kind === "gdelt" && (!s.last_fetched_at || Date.now() - new Date(s.last_fetched_at).getTime() > 55 * 60_000),
+  );
   const run = async (s: SourceRow) => {
     try {
       const ids = await ingestSource(s);

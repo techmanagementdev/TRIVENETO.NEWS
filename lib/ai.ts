@@ -101,7 +101,7 @@ Regole tassative:
 - Usa il condizionale per ciò che non è accertato. Non attribuire colpe: per indagini usa "indagato", "secondo l'accusa".
 - Non inserire link né la sezione fonti nel corpo: le fonti vengono aggiunte automaticamente.
 - Se le informazioni non bastano per un articolo corretto, imposta pubblicabile=false.
-Rispondi chiamando lo strumento salva_articolo.`;
+Rispondi SEMPRE e SOLO chiamando lo strumento salva_articolo, senza testo prima o dopo.`;
 
 export interface SourceForAI {
   n: number;
@@ -135,7 +135,7 @@ export async function generateArticle(
     max_tokens: opts.maxTokens,
     system: SYSTEM,
     tools: [TOOL],
-    tool_choice: { type: "tool", name: TOOL.name },
+    tool_choice: { type: "auto" },
     messages: [{ role: "user", content: user }],
   });
   const inTok = res.usage?.input_tokens ?? 0;
@@ -149,6 +149,10 @@ export async function generateArticle(
     costUsd(inTok, outTok),
   ]);
   const block = res.content.find((b) => b.type === "tool_use");
-  if (!block || block.type !== "tool_use") throw new Error("Risposta AI senza dati strutturati");
-  return ArticleSchema.parse(block.input);
+  if (block && block.type === "tool_use") return ArticleSchema.parse(block.input);
+  // ripiego: JSON nel testo
+  const text = res.content.map((b) => (b.type === "text" ? b.text : "")).join("\n");
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error("Risposta AI senza dati strutturati");
+  return ArticleSchema.parse(JSON.parse(m[0]));
 }
