@@ -9,13 +9,18 @@ export function aiConfigured() {
   return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
-function model() {
-  return process.env.LLM_MODEL || "claude-sonnet-5-5";
-}
+// Listino Claude API in USD per milione di token (input, output) — prompt sotto i 100k token
+export const MODEL_PRICES: Record<string, [number, number]> = {
+  "claude-haiku-5-5": [0.1, 0.5],
+  "claude-sonnet-5-5": [2, 10],
+};
+export const WRITER_MODELS = [
+  { id: "claude-haiku-5-5", name: "Economico — Claude Haiku 5.5 (circa 20 volte più economico)" },
+  { id: "claude-sonnet-5-5", name: "Qualità — Claude Sonnet 5.5" },
+];
 
-export function costUsd(inTok: number, outTok: number) {
-  const pin = Number(process.env.LLM_PRICE_INPUT_PER_MTOK || 3);
-  const pout = Number(process.env.LLM_PRICE_OUTPUT_PER_MTOK || 15);
+export function costUsd(inTok: number, outTok: number, model = "claude-sonnet-5-5") {
+  const [pin, pout] = MODEL_PRICES[model] ?? [Number(process.env.LLM_PRICE_INPUT_PER_MTOK || 2), Number(process.env.LLM_PRICE_OUTPUT_PER_MTOK || 10)];
   return (inTok * pin + outTok * pout) / 1_000_000;
 }
 
@@ -135,8 +140,9 @@ export interface SourceForAI {
 
 export async function generateArticle(
   sources: SourceForAI[],
-  opts: { eventId: number; maxTokens: number; feedback?: string; previous?: { title: string; body: string } },
+  opts: { eventId: number; maxTokens: number; model: string; feedback?: string; previous?: { title: string; body: string } },
 ): Promise<ArticleDraft> {
+  const model = () => opts.model;
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const sourceBlock = sources
     .map(
@@ -166,7 +172,7 @@ export async function generateArticle(
     opts.eventId,
     inTok,
     outTok,
-    costUsd(inTok, outTok),
+    costUsd(inTok, outTok, model()),
   ]);
   const block = res.content.find((b) => b.type === "tool_use");
   if (res.stop_reason === "max_tokens") throw new Error(`Risposta AI troncata (limite di ${opts.maxTokens} token)`);

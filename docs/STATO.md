@@ -40,6 +40,9 @@ Situazione alle 06:50: 6 articoli online, 6 da approvare nel CRM, nessun errore.
 
 - Notizie importanti da una sola fonte ANSA (affidabilità 5): vengono scritte ma restano sempre in revisione; se l'AI non scrive il testo, l'evento va «in attesa» di altre fonti
 
+- Costi ridotti (17/11): scrittura con Claude Haiku 5.5 (scelta in Impostazioni), 1 sola ricerca web per notizia e solo se ha meno di 2 fonti indipendenti (max 4 per aggiornamento), testi delle fonti più corti
+- CRM: ① Raccolta (/admin/raccolta), ② Comparazione (/admin/notizie), ③ Elaborazione AI (/admin/elaborazione)
+
 ## Problemi aperti / da fare
 - Repository da rendere privato (impostazione GitHub non modificabile da Claude in questo ambiente)
 - Dominio: `triveneto.news` e `www.triveneto.news` aggiunti su Railway (17/11). In attesa dei record DNS presso il registrar:

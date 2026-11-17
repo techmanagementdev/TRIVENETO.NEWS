@@ -110,7 +110,7 @@ export async function generateEvent(form: FormData) {
   try {
     const settings = await getSettings();
     const ev = await q1<{ independent_count: number; enriched_at: Date | null }>(`SELECT independent_count, enriched_at FROM events WHERE id=$1`, [id]);
-    if (ev && ev.independent_count < 3 && (!ev.enriched_at || Date.now() - new Date(ev.enriched_at).getTime() > 30 * 60_000)) {
+    if (ev && ev.independent_count < 2 && (!ev.enriched_at || Date.now() - new Date(ev.enriched_at).getTime() > 30 * 60_000)) {
       await enrichEvent(id, settings);
     }
     const r = await generateForEvent(id, settings, { update });
@@ -192,6 +192,9 @@ export async function saveSettings(form: FormData) {
   await setSetting("max_articles_per_day", clamp(num(form, "max_articles_per_day"), 0, 300, 30));
   await setSetting("monthly_budget_usd", clamp(num(form, "monthly_budget_usd"), 0, 10000, 40));
   await setSetting("max_tokens_per_article", clamp(num(form, "max_tokens_per_article"), 2000, 16000, 8000));
+  const wm = str(form, "writer_model");
+  if (["claude-haiku-5-5", "claude-sonnet-5-5"].includes(wm)) await setSetting("writer_model", wm);
+  await setSetting("max_enrich_per_run", clamp(num(form, "max_enrich_per_run"), 0, 20, 4));
   const tw: Record<string, number> = {};
   for (const t of TERRITORY_SLUGS) tw[t] = clamp(num(form, `tw_${t}`), 0, 2, 1);
   await setSetting("territory_weights", tw);

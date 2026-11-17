@@ -30,7 +30,8 @@ export default async function EventsPage({ searchParams }: { searchParams: SP })
   const qs = (p: number) => "?" + new URLSearchParams({ ...(sp as any), p: String(p) }).toString();
   return (
     <>
-      <h1>Notizie</h1>
+      <h1>Comparazione notizie</h1>
+      <p className="small">Ogni riga è un fatto: le notizie di testate diverse sullo stesso fatto sono raggruppate insieme. Apri un evento per vedere le fonti affiancate, i fatti confermati, le contraddizioni e il testo scritto dall'AI.</p>
       <form className="filters">
         <input name="q" placeholder="Cerca titolo" defaultValue={sp.q} />
         <select name="stato" defaultValue={sp.stato ?? ""}>

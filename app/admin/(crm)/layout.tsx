@@ -12,7 +12,9 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
         <Link href="/admin" className="logo">TRIVENETO<span style={{ color: "#9db7e0" }}>.NEWS</span></Link>
         <nav>
           <Link href="/admin">Dashboard</Link>
-          <Link href="/admin/notizie">Notizie</Link>
+          <Link href="/admin/raccolta">① Raccolta</Link>
+          <Link href="/admin/notizie">② Comparazione</Link>
+          <Link href="/admin/elaborazione">③ Elaborazione AI</Link>
           <Link href="/admin/articoli">Articoli</Link>
           <Link href="/admin/pubblicita">Pubblicità</Link>
           <Link href="/admin/fonti">Fonti</Link>

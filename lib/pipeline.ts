@@ -72,7 +72,7 @@ async function buildSources(eventId: number): Promise<{ list: SourceForAI[]; ful
     seen.add(key);
     const ok = r.content_status === "ok" && r.content;
     if (ok) okCount++;
-    const text = ok ? truncate(r.content!, 3500) : (r.summary ?? "(solo titolo disponibile)");
+    const text = ok ? truncate(r.content!, 2500) : (r.summary ?? "(solo titolo disponibile)");
     if (ok) fullTexts.push(r.content!);
     else if (r.summary) fullTexts.push(r.summary);
     list.push({
@@ -85,7 +85,7 @@ async function buildSources(eventId: number): Promise<{ list: SourceForAI[]; ful
       primary: Boolean(r.is_primary),
       reliability: r.reliability ?? 3,
     });
-    if (list.length >= 6) break;
+    if (list.length >= 5) break;
   }
   return { list, fullTexts, okCount };
 }
@@ -135,6 +135,7 @@ export async function generateForEvent(eventId: number, settings: Settings, opts
   let draft: ArticleDraft = await generateArticle(list, {
     eventId,
     maxTokens,
+    model: settings.writer_model,
     previous: existing && opts.update ? { title: existing.title, body: existing.body_md } : undefined,
   });
   // l'AI non ha scritto un articolo completo (di solito: fonti insufficienti): si attendono altre fonti
@@ -150,6 +151,7 @@ export async function generateForEvent(eventId: number, settings: Settings, opts
     draft = await generateArticle(list, {
       eventId,
       maxTokens,
+      model: settings.writer_model,
       feedback: `La bozza precedente riprendeva troppe frasi delle fonti (${Math.round(sim * 100)}% di sequenze in comune). Riscrivi con struttura e parole completamente nuove.`,
     });
     sim = Math.max(0, ...fullTexts.map((t) => overlapRatio(draft.corpo_markdown, t)));
@@ -292,7 +294,7 @@ export async function runCycle(trigger: "scheduler" | "manuale" = "scheduler") {
     for (const f of failing) log(`fonte in errore: ${f.name} (${f.error_count}×) — ${f.last_error}`);
     stats.cluster = await clusterNewItems(settings);
     const spentBefore = await monthSpendUsd();
-    if (spentBefore < settings.monthly_budget_usd) stats.ricerca = await enrichBatch(settings);
+    if (spentBefore < settings.monthly_budget_usd) stats.ricerca = await enrichBatch(settings, settings.max_enrich_per_run);
     stats.generate = await generateBatch(settings);
     stats.articoli = await q1(`SELECT count(*) FILTER (WHERE status='pubblicato')::int AS pubblicati, count(*) FILTER (WHERE status='pronto')::int AS da_approvare FROM articles`);
     await q(`UPDATE job_runs SET finished_at=now(), status='ok', stats=$2::jsonb WHERE id=$1`, [run!.id, JSON.stringify(stats)]);

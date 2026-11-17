@@ -21,6 +21,8 @@ export interface Settings {
   show_ad_placeholders: boolean;
   schedule_hours: number[]; // ore (Europe/Rome) in cui eseguire il controllo; vuoto = ogni fetch_interval_min
   last_scheduled_slot: string;
+  writer_model: string;
+  max_enrich_per_run: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -50,6 +52,8 @@ export const DEFAULT_SETTINGS: Settings = {
   show_ad_placeholders: true,
   schedule_hours: [6, 12, 18],
   last_scheduled_slot: "",
+  writer_model: "claude-haiku-5-5",
+  max_enrich_per_run: 4,
 };
 
 export async function getSettings(): Promise<Settings> {

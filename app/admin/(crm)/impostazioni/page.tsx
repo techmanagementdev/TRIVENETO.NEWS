@@ -1,4 +1,4 @@
-import { aiConfigured } from "@/lib/ai";
+import { aiConfigured, WRITER_MODELS } from "@/lib/ai";
 import { getSettings } from "@/lib/settings";
 import { CATEGORIES, TERRITORIES } from "@/lib/taxonomy";
 import { saveSettings } from "../../actions";
@@ -55,6 +55,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <div className="panel">
           <h2>Costi AI {aiConfigured() ? <span className="badge pubblicato">chiave configurata</span> : <span className="badge errore">chiave mancante</span>}</h2>
           <div className="grid2">
+            <label>Modello che scrive gli articoli
+              <select name="writer_model" defaultValue={s.writer_model}>{WRITER_MODELS.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</select>
+            </label>
+            {num("max_enrich_per_run", "Ricerche di altre testate per aggiornamento (1 cent l'una)")}
             {num("monthly_budget_usd", "Budget mensile massimo (USD)", 1, "Al raggiungimento la generazione si ferma fino al mese successivo.")}
             {num("max_tokens_per_article", "Token massimi per articolo")}
           </div>

@@ -37,13 +37,13 @@ export async function enrichEvent(eventId: number, settings: Settings): Promise<
       tools: [{
         type: "web_search_20250305",
         name: "web_search",
-        max_uses: 2,
+        max_uses: 1,
         blocked_domains: [...known, ...EXCLUDED].slice(0, 50),
         user_location: { type: "approximate", country: "IT", timezone: "Europe/Rome" },
       }],
       messages: [{
         role: "user",
-        content: `Cerca articoli di altre testate giornalistiche (italiane o internazionali) pubblicati negli ultimi giorni che riportano questa stessa notizia. Fai al massimo due ricerche brevi in italiano con i nomi propri e i luoghi principali. Non serve rispondere con un testo.\n\nNOTIZIA: ${ev.title}\n${truncate(summary, 400)}`,
+        content: `Cerca articoli di altre testate giornalistiche (italiane o internazionali) pubblicati negli ultimi giorni che riportano questa stessa notizia. Fai UNA sola ricerca breve in italiano con i nomi propri e i luoghi principali. Non serve rispondere con un testo.\n\nNOTIZIA: ${ev.title}\n${truncate(summary, 400)}`,
       }],
     });
   } catch (e: any) {
@@ -54,7 +54,7 @@ export async function enrichEvent(eventId: number, settings: Settings): Promise<
   }
   const searches = (res.usage as any)?.server_tool_use?.web_search_requests ?? 0;
   await q(`INSERT INTO ai_usage (model, purpose, event_id, input_tokens, output_tokens, cost_usd) VALUES ($1,'ricerca fonti',$2,$3,$4,$5)`, [
-    model, eventId, res.usage.input_tokens, res.usage.output_tokens, costUsd(res.usage.input_tokens, res.usage.output_tokens) + searches * SEARCH_PRICE_USD,
+    model, eventId, res.usage.input_tokens, res.usage.output_tokens, costUsd(res.usage.input_tokens, res.usage.output_tokens, model) + searches * SEARCH_PRICE_USD,
   ]);
 
   // risultati della ricerca
@@ -99,7 +99,7 @@ export async function enrichBatch(settings: Settings, limit = 6) {
   if (!aiConfigured()) return { enriched: 0, added: 0 };
   const evs = await q<{ id: number }>(
     `SELECT id FROM events
-     WHERE status IN ('nuovo','in_attesa') AND priority >= $1 AND independent_count < 3
+     WHERE status IN ('nuovo','in_attesa') AND priority >= $1 AND independent_count < 2
        AND last_seen > now() - interval '36 hours'
        AND (enriched_at IS NULL OR enriched_at < now() - interval '6 hours')
        AND NOT EXISTS (SELECT 1 FROM articles a WHERE a.event_id = events.id)
