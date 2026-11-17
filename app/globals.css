@@ -283,3 +283,38 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; fo
   .compact { grid-template-columns: 96px minmax(0, 1fr); }
   .card.big h3 { font-size: 22px; }
 }
+
+/* ---------- Banda Ultim'ora animata ---------- */
+.ticker { display: flex; align-items: stretch; background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-top: 14px; font-size: 14px; }
+.tk-label { display: flex; align-items: center; gap: 8px; background: #c62828; color: #fff; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; padding: 0 14px; white-space: nowrap; position: relative; z-index: 1; }
+.tk-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: tk-pulse 1.4s ease-in-out infinite; }
+.tk-viewport { flex: 1; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 3%, #000 95%, transparent); }
+.tk-track { display: flex; width: max-content; animation: tk-scroll linear infinite; }
+.ticker:hover .tk-track, .ticker:focus-within .tk-track { animation-play-state: paused; }
+.tk-group { display: flex; }
+.tk-item { display: inline-flex; align-items: center; gap: 8px; padding: 9px 26px 9px 0; white-space: nowrap; font-weight: 600; color: var(--ink); }
+.tk-item::after { content: "•"; color: #c62828; margin-left: 18px; }
+.tk-item:hover span { color: var(--blue); text-decoration: underline; }
+.tk-item time { color: #c62828; font-size: 12px; font-weight: 700; }
+.ticker-bottom { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; border-radius: 0; border-width: 1px 0 0; z-index: 40; box-shadow: 0 -4px 16px rgba(0,0,0,.08); background: var(--blue-dark); border-color: var(--blue-dark); }
+.ticker-bottom .tk-label { background: #c62828; }
+.ticker-bottom .tk-item { color: #fff; }
+.ticker-bottom .tk-item time, .ticker-bottom .tk-item::after { color: #ffb4a9; }
+.ticker-bottom .tk-item:hover span { color: #fff; }
+.ticker-bottom .tk-track { animation-direction: reverse; }
+.tk-close { background: transparent; border: 0; color: #fff; font-size: 22px; line-height: 1; padding: 0 14px; border-radius: 0; cursor: pointer; }
+.tk-close:hover { background: rgba(255,255,255,.12); }
+html.tk-closed .ticker-bottom { display: none; }
+html:not(.tk-closed) body { padding-bottom: 40px; }
+html:not(.tk-closed) .cookie { bottom: 54px; }
+@keyframes tk-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes tk-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) {
+  .tk-track { animation: none; }
+  .tk-viewport { overflow-x: auto; }
+  .tk-group[aria-hidden] { display: none; }
+}
+@media (max-width: 640px) {
+  .tk-label { padding: 0 10px; font-size: 11px; }
+  .ticker { font-size: 13px; }
+}

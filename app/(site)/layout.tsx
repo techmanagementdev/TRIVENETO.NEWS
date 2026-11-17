@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import CookieConsent from "@/components/CookieConsent";
+import Ticker from "@/components/Ticker";
 import { CATEGORIES, TERRITORIES } from "@/lib/taxonomy";
 import { fmtDate } from "@/lib/content";
 
@@ -37,6 +38,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <Link className="nav-search" href="/cerca" aria-label="Cerca">⌕ Cerca</Link>
         </div>
       </nav>
+      <div className="wrap"><Ticker position="top" /></div>
       <div className="wrap"><AdSlot placement="header" /></div>
       <main className="wrap">{children}</main>
       <div className="wrap"><AdSlot placement="footer" /></div>
@@ -68,6 +70,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </footer>
+      <Ticker position="bottom" />
       <CookieConsent gaId={process.env.NEXT_PUBLIC_GA_ID || undefined} />
     </>
   );

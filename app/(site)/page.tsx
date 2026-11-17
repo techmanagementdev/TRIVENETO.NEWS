@@ -55,16 +55,6 @@ export default async function Home() {
 
   return (
     <div className="home">
-      {/* Ultim'ora */}
-      <div className="breaking">
-        <span className="breaking-label">Ultim&apos;ora</span>
-        <div className="breaking-track">
-          {news.slice(0, 6).map((a) => (
-            <Link key={a.id} href={articlePath(a.slug)}><time>{fmtRelative(a.published_at)}</time> {a.title}</Link>
-          ))}
-        </div>
-      </div>
-
       {/* Apertura: notizia principale + due secondarie + ultime notizie */}
       <section className="top-grid">
         <article className="lead">
