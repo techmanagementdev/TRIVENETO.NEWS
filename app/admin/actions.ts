@@ -252,11 +252,12 @@ export interface AdFormState { error?: string; ok?: boolean }
 export async function saveAd(_: AdFormState, form: FormData): Promise<AdFormState> {
   await requireAdmin();
   const id = num(form, "id") || null;
-  const title = str(form, "title", 120);
+  const file0 = form.get("file");
+  const title = str(form, "title", 120) || str(form, "advertiser", 120) ||
+    (file0 && typeof file0 !== "string" && file0.name ? file0.name.replace(/\.[a-z0-9]+$/i, "").slice(0, 120) : "") || "Annuncio";
   const placement = str(form, "placement");
   const link = str(form, "link_url", 1000);
   const videoUrl = str(form, "video_url", 1000);
-  if (!title) return { error: "Indica un nome per l'annuncio." };
   if (!PLACEMENT_SLUGS.includes(placement)) return { error: "Scegli una posizione." };
   if (link && !/^https?:\/\/\S+$/.test(link)) return { error: "Il link deve iniziare con https://" };
 
@@ -293,7 +294,7 @@ export async function saveAd(_: AdFormState, form: FormData): Promise<AdFormStat
       kind ? [id, ...vals, kind, mediaId, mediaId ? null : videoUrl] : [id, ...vals],
     );
   } else {
-    if (!kind) return { error: "Carica un'immagine, GIF o video, oppure indica un link video." };
+    if (!kind) return { error: "Scegli prima un file da caricare (o un video YouTube nelle altre opzioni)." };
     await q(
       `INSERT INTO ads (title, advertiser, placement, link_url, alt, weight, starts_at, ends_at, active, kind, media_id, video_url)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
