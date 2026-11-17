@@ -80,6 +80,13 @@ export const CATEGORY_KEYWORDS: Record<CategorySlug, string[]> = {
   attualita: [],
 };
 
+// Aree di interesse prioritario della testata: piccolo bonus di priorità.
+export const FOCUS_KEYWORDS = [
+  "bando", "bandi", "contribut", "incentiv", "finanziament", "pnrr", "fondi europei", "voucher", "agevolazion",
+  "startup", "intelligenza artificiale", "innovazione", "idrogeno", "fotovoltaic", "comunita energetic", "efficienza energetica",
+  "economia circolare", "greentech", "cleantech", "batteri", "accumulo",
+];
+
 // Temi che richiedono sempre revisione umana.
 export const SENSITIVE_KEYWORDS = [
   "arrest", "indagat", "accusat", "accusa", "process", "condann", "omicid", "violenz", "abus", "stupr", "morto",

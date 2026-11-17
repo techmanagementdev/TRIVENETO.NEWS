@@ -1,4 +1,4 @@
-import { CATEGORY_KEYWORDS, CATEGORY_SLUGS, LOCAL_TERRITORIES, SENSITIVE_KEYWORDS, TERRITORY_KEYWORDS, type CategorySlug } from "./taxonomy";
+import { CATEGORY_KEYWORDS, CATEGORY_SLUGS, FOCUS_KEYWORDS, LOCAL_TERRITORIES, SENSITIVE_KEYWORDS, TERRITORY_KEYWORDS, type CategorySlug } from "./taxonomy";
 import { containsKeyword, normalize } from "./text";
 import type { Settings } from "./settings";
 
@@ -71,6 +71,7 @@ export function scoreEvent(input: ScoreInput, settings: Pick<Settings, "territor
   score += Math.min(input.independent, 4) * 8;
   if (input.hasPrimary) score += 8;
   if (input.maxReliability >= 5) score += 5;
+  if (FOCUS_KEYWORDS.some((k) => containsKeyword(norm, k))) score += 6; // innovazione, greentech, bandi
 
   const hours = ((input.now ?? new Date()).getTime() - input.lastSeen.getTime()) / 3600_000;
   if (hours > 24) score -= 25;

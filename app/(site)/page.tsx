@@ -1,7 +1,8 @@
 import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
+import FocusBox from "@/components/FocusBox";
 import { Empty, Thumb } from "@/components/ArticleBits";
-import { articlePath, byCategory, byTerritory, fmtRelative, latest, mostRead, type ArticleCard } from "@/lib/content";
+import { articlePath, byCategory, byTerritory, fmtRelative, latest, mostRead, type ArticleCard, type FocusKind } from "@/lib/content";
 import { CATEGORIES, categoryName, TERRITORIES, territoryName } from "@/lib/taxonomy";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,21 @@ export default async function Home() {
       return { c, items: fresh.length ? fresh : items };
     })
     .filter((x) => x.items.length);
+  // spazi liberi nelle sezioni: un focus tematico coerente con la sezione, senza ripetere lo stesso tema
+  const preferred: Record<string, FocusKind[]> = {
+    economia: ["bandi", "innovazione", "greentech"],
+    politica: ["bandi", "greentech", "innovazione"],
+    sostenibilita: ["greentech", "bandi", "innovazione"],
+    tecnologia: ["innovazione", "bandi", "greentech"],
+    attualita: ["innovazione", "greentech", "bandi"],
+  };
+  const usedFocus = new Set<FocusKind>();
+  const focusFor = (cat: string, n: number): FocusKind | null => {
+    if (n >= 4) return null;
+    const k = (preferred[cat] ?? ["bandi"]).find((x) => !usedFocus.has(x)) ?? null;
+    if (k) usedFocus.add(k);
+    return k;
+  };
 
   return (
     <div className="home">
@@ -102,7 +118,9 @@ export default async function Home() {
       <AdSlot placement="home_top" />
 
       {/* Sezioni per categoria: una grande + elenco */}
-      {filledCats.map(({ c, items }, i) => (
+      {filledCats.map(({ c, items }, i) => {
+        const focus = focusFor(c.slug, items.length);
+        return (
         <div key={c.slug}>
           <section className={`section cat-block cat-${c.slug}`}>
             <h2 className="section-title"><span>{c.name}</span><Link href={`/categoria/${c.slug}`}>Tutte →</Link></h2>
@@ -117,13 +135,14 @@ export default async function Home() {
               </article>
               <div className="cat-list">
                 {items.slice(1, 4).map((a) => <Compact key={a.id} a={a} />)}
-                {items.length === 1 && <p className="small">Altre notizie di {c.name.toLowerCase()} in arrivo.</p>}
+                {focus && <FocusBox kind={focus} exclude={items.map((a) => a.id)} limit={Math.max(2, 5 - items.length)} />}
               </div>
             </div>
           </section>
           {i === 1 && <AdSlot placement="home_middle" />}
         </div>
-      ))}
+        );
+      })}
       {filledCats.length < 2 && <AdSlot placement="home_middle" />}
 
       {/* Dai territori */}

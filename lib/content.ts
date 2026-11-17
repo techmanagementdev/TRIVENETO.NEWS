@@ -125,3 +125,33 @@ export function splitAfterParagraph(html: string, n: number): [string, string] {
   }
   return [html.slice(0, idx + 4), html.slice(idx + 4)];
 }
+
+// Aree di approfondimento della home
+export const FOCUS = {
+  innovazione: {
+    title: "Tecnologie innovative",
+    intro: "Intelligenza artificiale, digitale, ricerca e startup che cambiano il Nord-Est.",
+    where: `category = 'tecnologia'`,
+    link: "/categoria/tecnologia",
+  },
+  greentech: {
+    title: "Greentech",
+    intro: "Energia pulita, efficienza, mobilità e economia circolare sul territorio.",
+    where: `category = 'sostenibilita'`,
+    link: "/categoria/sostenibilita",
+  },
+  bandi: {
+    title: "Bandi e contributi",
+    intro: "Finanziamenti, incentivi e opportunità per imprese, enti e cittadini.",
+    where: `('bandi' = ANY(tags) OR title ~* '(bando|bandi|contribut|incentiv|finanziament|pnrr|fondi europei|voucher|agevolazion)')`,
+    link: "/tag/bandi",
+  },
+} as const;
+export type FocusKind = keyof typeof FOCUS;
+
+export async function byFocus(kind: FocusKind, exclude: number[] = [], limit = 4) {
+  return q<ArticleCard>(
+    `SELECT ${COLS} FROM articles WHERE status='pubblicato' AND ${FOCUS[kind].where} AND NOT (id = ANY($1)) ORDER BY published_at DESC LIMIT $2`,
+    [exclude, limit],
+  );
+}

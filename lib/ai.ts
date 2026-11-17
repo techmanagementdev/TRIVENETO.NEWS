@@ -82,7 +82,7 @@ const TOOL: Anthropic.Tool = {
       motivazione_impatto: { type: "string" },
       categoria: { type: "string", enum: CATEGORY_SLUGS },
       territori: { type: "array", items: { type: "string", enum: TERRITORY_SLUGS } },
-      tag: { type: "array", items: { type: "string" }, description: "massimo 6 tag brevi in italiano" },
+      tag: { type: "array", items: { type: "string" }, description: "massimo 6 tag brevi in italiano, minuscoli; se la notizia riguarda bandi, contributi, incentivi o finanziamenti pubblici includi il tag 'bandi'; per tecnologie verdi o energia pulita includi 'greentech'" },
       fatti_confermati: {
         type: "array",
         items: { type: "object", properties: { fatto: { type: "string" }, fonti: { type: "array", items: { type: "number" } } }, required: ["fatto", "fonti"] },
