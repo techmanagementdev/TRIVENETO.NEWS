@@ -135,6 +135,14 @@ export async function generateForEvent(eventId: number, settings: Settings, opts
     maxTokens,
     previous: existing && opts.update ? { title: existing.title, body: existing.body_md } : undefined,
   });
+  // l'AI non ha scritto un articolo completo (di solito: fonti insufficienti): si attendono altre fonti
+  if (draft.corpo_markdown.length < 200 || draft.titolo.length < 10 || draft.sommario.length < 20) {
+    await q(`UPDATE events SET status='in_attesa', status_note=$2, updated_at=now() WHERE id=$1`, [
+      eventId,
+      `In attesa di altre fonti: ${draft.motivo_non_pubblicabile || "informazioni insufficienti per un articolo completo"}`.slice(0, 500),
+    ]);
+    return { outcome: "in_attesa", note: "testo non generato" };
+  }
   let sim = Math.max(0, ...fullTexts.map((t) => overlapRatio(draft.corpo_markdown, t)));
   if (sim > settings.similarity_max) {
     draft = await generateArticle(list, {
