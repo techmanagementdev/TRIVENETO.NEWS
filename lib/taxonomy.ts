@@ -85,4 +85,6 @@ export const SENSITIVE_KEYWORDS = [
   "arrest", "indagat", "accusat", "accusa", "process", "condann", "omicid", "violenz", "abus", "stupr", "morto",
   "morta", "morti", "vittim", "tragedi", "denunc", "scandal", "corruzion", "tangent", "inchiesta", "procura",
   "sequestr", "suicid", "minor", "femminicid", "aggression", "rapina", "spaccio", "sentenza", "querela", "diffamazion",
+  "bomb", "minacc", "attentat", "terroris", "esplosi", "evacuat", "ostagg", "ferit", "scompars", "annegat", "investit",
+  "incidente mortale", "intimidator", "estorsion", "molest", "maltratt", "armi", "accoltell", "spar",
 ];

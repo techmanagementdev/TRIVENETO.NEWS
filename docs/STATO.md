@@ -28,6 +28,12 @@ _Aggiornato: 17/11/2026 (sessione 1)_
 | 16 | Costi ed errori monitorabili | ✅ dashboard, statistiche, log worker |
 | 17 | Deploy Railway verificato | ✅ healthcheck `/api/health` superato |
 
+## Funzioni aggiunte (17/11 notte)
+- Pubblicità dal CRM (`/admin/pubblicita`): 8 posizioni, immagini/GIF/video caricati (salvati in Postgres, tabella `media`) o link YouTube/MP4, rotazione pesata, date di inizio/fine, visualizzazioni e clic (`/api/ad/[id]/click`), riquadri «Spazio disponibile» attivabili
+- Gestione articoli (`/admin/articoli`): schede per stato, selezione multipla, pubblica/togli/elimina in blocco o per riga
+- Sito: colonna laterale negli articoli, annuncio dentro il testo, tempi relativi, tempo di lettura, ricerca nel menu
+- Parole chiave sensibili ampliate (minacce, bombe, attentati, feriti, scomparse…): sempre in revisione
+
 ## Problemi aperti / da fare
 - Repository da rendere privato (impostazione GitHub non modificabile da Claude in questo ambiente)
 - Dominio: `triveneto.news` e `www.triveneto.news` aggiunti su Railway (17/11). In attesa dei record DNS presso il registrar:
