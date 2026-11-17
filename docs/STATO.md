@@ -17,10 +17,10 @@ _Aggiornato: 17/11/2026 (sessione 1)_
 | 5 | Rilevamento notizie reali | ✅ primo ciclo: 433 notizie da 25 fonti |
 | 6 | Raggruppamento | ✅ |
 | 7 | Fonti consultabili | ✅ scheda evento |
-| 8 | Generazione articoli con Claude | ⏳ manca `ANTHROPIC_API_KEY` (testato con AI simulata) |
+| 8 | Generazione articoli con Claude | ✅ attiva dal 17/11 03:20 (modello claude-sonnet-5-5, tool_choice auto) |
 | 9 | Revisione articoli | ✅ |
-| 10 | Immagini con licenza | ✅ Wikimedia Commons / grafica neutra (verifica reale dopo chiave AI) |
-| 11 | Pubblicazione | ✅ (test integrazione) |
+| 10 | Immagini con licenza | ✅ verificato: foto Wikimedia con autore e licenza in didascalia |
+| 11 | Pubblicazione | ✅ primo articolo autopubblicato 17/11 03:27 |
 | 12 | Sito pubblico navigabile | ✅ |
 | 13 | Controllo ogni 15 minuti | ✅ worker attivo |
 | 14 | Prevenzione duplicati | ✅ |
@@ -29,7 +29,6 @@ _Aggiornato: 17/11/2026 (sessione 1)_
 | 17 | Deploy Railway verificato | ✅ healthcheck `/api/health` superato |
 
 ## Problemi aperti / da fare
-- Chiave Claude API da configurare sul servizio `worker` e `web` (`ANTHROPIC_API_KEY`)
 - Repository da rendere privato (impostazione GitHub non modificabile da Claude in questo ambiente)
 - Dominio: `triveneto.news` e `www.triveneto.news` aggiunti su Railway (17/11). In attesa dei record DNS presso il registrar:
   - CNAME `triveneto.news` → `ctodb0kb.up.railway.app` (se il registrar non ammette CNAME sulla radice: ALIAS/ANAME/flattening)
@@ -37,7 +36,9 @@ _Aggiornato: 17/11/2026 (sessione 1)_
   - CNAME `www` → `qwhlcsma.up.railway.app`
   - TXT `_railway-verify.www` → `railway-verify=7f93f8c016ce750e82df16a894c3a21094142ea011f66c473eb3db8d71f7b9df`
   - Dopo l'attivazione: impostare `SITE_URL=https://triveneto.news` su web e worker
-- Nessuna chiave Anthropic trovata negli altri progetti Railway (17/11): va inserita dal proprietario
+- Chiave Anthropic inserita dal proprietario sul worker; il web la legge per riferimento `${{worker.ANTHROPIC_API_KEY}}`
+- Autopubblicazione attiva (migrazione 005): semiautomatica su economia, sostenibilità, tecnologia, attualità. Politica e temi sensibili sempre in revisione
+- GDELT risponde spesso 429 da Railway: consultato al massimo una volta all'ora; da disattivare se continua
 - `PUBLISHER_INFO` (editore, direttore responsabile, registrazione) da fornire
 - Fonti disattivate: Il Piccolo (404), Parlamento europeo (403, blocca i bot). GDELT a volte risponde lentamente o con 429
 - Backup: affidati ai backup del servizio Postgres di Railway (verificare il piano); nessun backup applicativo separato
