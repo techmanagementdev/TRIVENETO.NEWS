@@ -1,0 +1,50 @@
+{
+  "name": "triveneto-news",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npm run migrate && next start -p ${PORT:-3000}",
+    "worker": "tsx worker/index.ts",
+    "worker:once": "tsx worker/index.ts --once",
+    "migrate": "tsx scripts/migrate.ts",
+    "seed": "tsx scripts/seed.ts",
+    "lint": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.9.0",
+    "@mozilla/readability": "^0.6.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.6",
+    "linkedom": "^0.18.5",
+    "marked": "^15.0.0",
+    "next": "^15.5.29",
+    "pg": "^8.13.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "robots-parser": "^3.0.1",
+    "rss-parser": "^3.13.0",
+    "sanitize-html": "^2.14.0",
+    "tsx": "^4.19.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/sanitize-html": "^2.13.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "overrides": {
+    "postcss": "^8.5.33"
+  }
+}
