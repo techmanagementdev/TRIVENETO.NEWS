@@ -46,7 +46,7 @@ _Aggiornato: 17/11/2026 (sessione 1)_
   - Dopo l'attivazione: impostare `SITE_URL=https://triveneto.news` su web e worker
 - Chiave Anthropic inserita dal proprietario sul worker; il web la legge per riferimento `${{worker.ANTHROPIC_API_KEY}}`
 - Autopubblicazione attiva (migrazione 005): semiautomatica su economia, sostenibilità, tecnologia, attualità. Politica e temi sensibili sempre in revisione
-- GDELT risponde spesso 429 da Railway: consultato al massimo una volta all'ora; da disattivare se continua
+- GDELT disattivato (migrazione 009): rispondeva sempre 429 o andava in timeout da Railway
 - `PUBLISHER_INFO` (editore, direttore responsabile, registrazione) da fornire
 - Fonti disattivate: Il Piccolo (404), Parlamento europeo (403, blocca i bot). GDELT a volte risponde lentamente o con 429
 - Backup: affidati ai backup del servizio Postgres di Railway (verificare il piano); nessun backup applicativo separato
