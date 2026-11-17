@@ -33,19 +33,33 @@ export const ArticleSchema = z.object({
   motivazione_impatto: z.string(),
   categoria: z.enum(CATEGORY_SLUGS as [string, ...string[]]),
   territori: z.array(z.enum(TERRITORY_SLUGS as [string, ...string[]])).min(1),
-  tag: z.array(z.string()).max(8),
+  tag: z.array(z.string()).transform((t) => t.slice(0, 8)),
   fatti_confermati: z.array(z.object({ fatto: z.string(), fonti: z.array(z.number()) })),
   discrepanze: z.array(z.string()),
   ipotesi_non_verificate: z.array(z.string()),
-  titolo: z.string().min(10).max(120),
-  sommario: z.string().min(20).max(400),
+  titolo: z.string().min(10),
+  sommario: z.string().min(20),
   corpo_markdown: z.string().min(200),
-  meta_title: z.string().max(70),
-  meta_description: z.string().max(170),
-  slug: z.string().max(90),
-  testo_social: z.string().max(300),
-  query_immagine: z.string().max(80),
+  meta_title: z.string().optional().default(""),
+  meta_description: z.string().optional().default(""),
+  slug: z.string().optional().default(""),
+  testo_social: z.string().optional().default(""),
+  query_immagine: z.string().optional().default(""),
 });
+
+/** Completa i campi accessori mancanti o troppo lunghi senza nuove chiamate AI. */
+function finalize(d: ArticleDraft): ArticleDraft {
+  const cut = (s: string, n: number) => (s.length <= n ? s : s.slice(0, n - 1).replace(/\s+\S*$/, "") + "…");
+  return {
+    ...d,
+    titolo: cut(d.titolo, 120),
+    meta_title: cut(d.meta_title || d.titolo, 70),
+    meta_description: cut(d.meta_description || d.sommario, 165),
+    slug: (d.slug || d.titolo).slice(0, 90),
+    testo_social: cut(d.testo_social || d.sommario, 280),
+    query_immagine: (d.query_immagine || d.tag.slice(0, 2).join(" ")).slice(0, 80),
+  };
+}
 export type ArticleDraft = z.infer<typeof ArticleSchema>;
 
 const TOOL: Anthropic.Tool = {
@@ -149,10 +163,11 @@ export async function generateArticle(
     costUsd(inTok, outTok),
   ]);
   const block = res.content.find((b) => b.type === "tool_use");
-  if (block && block.type === "tool_use") return ArticleSchema.parse(block.input);
+  if (res.stop_reason === "max_tokens") throw new Error(`Risposta AI troncata (limite di ${opts.maxTokens} token)`);
+  if (block && block.type === "tool_use") return finalize(ArticleSchema.parse(block.input));
   // ripiego: JSON nel testo
   const text = res.content.map((b) => (b.type === "text" ? b.text : "")).join("\n");
   const m = text.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("Risposta AI senza dati strutturati");
-  return ArticleSchema.parse(JSON.parse(m[0]));
+  return finalize(ArticleSchema.parse(JSON.parse(m[0])));
 }

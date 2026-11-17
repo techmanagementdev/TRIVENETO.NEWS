@@ -182,7 +182,7 @@ export async function saveSettings(form: FormData) {
   await setSetting("max_articles_per_run", clamp(num(form, "max_articles_per_run"), 0, 20, 3));
   await setSetting("max_articles_per_day", clamp(num(form, "max_articles_per_day"), 0, 300, 30));
   await setSetting("monthly_budget_usd", clamp(num(form, "monthly_budget_usd"), 0, 10000, 40));
-  await setSetting("max_tokens_per_article", clamp(num(form, "max_tokens_per_article"), 1000, 8000, 2500));
+  await setSetting("max_tokens_per_article", clamp(num(form, "max_tokens_per_article"), 2000, 16000, 8000));
   const tw: Record<string, number> = {};
   for (const t of TERRITORY_SLUGS) tw[t] = clamp(num(form, `tw_${t}`), 0, 2, 1);
   await setSetting("territory_weights", tw);

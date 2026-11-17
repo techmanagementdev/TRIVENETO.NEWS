@@ -30,7 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
   max_articles_per_run: 3,
   max_articles_per_day: 30,
   monthly_budget_usd: 40,
-  max_tokens_per_article: 2500,
+  max_tokens_per_article: 8000,
   similarity_max: 0.08,
   territory_weights: {
     "trentino-alto-adige": 1,
