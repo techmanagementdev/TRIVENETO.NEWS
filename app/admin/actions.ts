@@ -178,6 +178,8 @@ export async function saveSettings(form: FormData) {
   await setSetting("auto_rules_approved", form.get("auto_rules_approved") === "on");
   await setSetting("auto_categories", form.getAll("auto_categories").map(String).filter((c) => CATEGORY_SLUGS.includes(c as any)));
   await setSetting("fetch_interval_min", clamp(num(form, "fetch_interval_min"), 5, 240, 15));
+  const hours = [...new Set(str(form, "schedule_hours", 200).split(/[,;\s]+/).filter(Boolean).map(Number).filter((h) => Number.isInteger(h) && h >= 0 && h <= 23))].sort((a, b) => a - b);
+  await setSetting("schedule_hours", hours);
   await setSetting("min_priority", clamp(num(form, "min_priority"), 0, 100, DEFAULT_SETTINGS.min_priority));
   await setSetting("min_independent_sources", clamp(num(form, "min_independent_sources"), 1, 5, 2));
   await setSetting("max_articles_per_run", clamp(num(form, "max_articles_per_run"), 0, 20, 3));

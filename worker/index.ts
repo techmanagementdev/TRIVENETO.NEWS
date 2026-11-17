@@ -1,6 +1,12 @@
 import { pool, q } from "../lib/db";
 import { runCycle } from "../lib/pipeline";
-import { getSettings } from "../lib/settings";
+import { getSettings, setSetting } from "../lib/settings";
+
+function romeNow() {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+  const g = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return { date: `${g("year")}-${g("month")}-${g("day")}`, hour: Number(g("hour")) };
+}
 
 const LOCK_ID = 424242;
 const log = (...a: unknown[]) => console.log(new Date().toISOString(), "[worker]", ...a);
@@ -49,11 +55,21 @@ async function main() {
   for (;;) {
     try {
       const s = await getSettings();
-      const intervalMs = Math.max(5, s.fetch_interval_min) * 60_000;
-      const due = Date.now() - lastRun >= intervalMs;
+      let due = false;
+      if (s.schedule_hours?.length) {
+        // orari fissi (ora italiana): un solo ciclo per fascia oraria, anche dopo un riavvio
+        const { date, hour } = romeNow();
+        const slot = `${date}-${hour}`;
+        if (s.schedule_hours.includes(hour) && s.last_scheduled_slot !== slot) {
+          await setSetting("last_scheduled_slot", slot);
+          due = true;
+        }
+      } else {
+        due = Date.now() - lastRun >= Math.max(5, s.fetch_interval_min) * 60_000;
+      }
       if (due || s.run_requested) {
         lastRun = Date.now();
-        await guardedCycle(s.run_requested && !due ? "manuale" : "scheduler");
+        await guardedCycle(due ? "scheduler" : "manuale");
       }
       if (Date.now() - lastMaintenance > 6 * 3600_000) {
         lastMaintenance = Date.now();

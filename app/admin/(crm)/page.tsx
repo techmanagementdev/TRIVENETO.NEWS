@@ -46,7 +46,7 @@ export default async function Dashboard() {
         <div className="kpi"><b>{k.ready}</b><span>articoli da approvare</span></div>
         <div className="kpi"><b>{k.pubToday}</b><span>pubblicati oggi ({k.pubTotal} totali)</span></div>
         <div className="kpi"><b className={k.runErr + k.evErr + (srcErr?.n ?? 0) ? "err-text" : ""}>{k.runErr + k.evErr}</b><span>errori · {srcErr?.n ?? 0} fonti con problemi</span></div>
-        <div className="kpi"><b style={{ fontSize: 18 }}>{last ? ago(last.started_at) : "mai"}</b><span>ultimo controllo {last && <Badge s={last.status === "ok" ? "pubblicato" : last.status === "running" ? "nuovo" : "errore"} />}</span></div>
+        <div className="kpi"><b style={{ fontSize: 18 }}>{last ? ago(last.started_at) : "mai"}</b><span>ultimo controllo{settings.schedule_hours.length ? ` · orari ${settings.schedule_hours.map((h) => String(h).padStart(2, "0") + ":00").join(", ")}` : ""} {last && <Badge s={last.status === "ok" ? "pubblicato" : last.status === "running" ? "nuovo" : "errore"} />}</span></div>
         <div className="kpi"><b style={{ fontSize: 18 }}>${spend.toFixed(2)} / ${settings.monthly_budget_usd}</b><span>costo AI del mese</span><div className="bar" style={{ marginTop: 6 }}><i style={{ width: `${pct}%` }} /></div></div>
       </div>
 

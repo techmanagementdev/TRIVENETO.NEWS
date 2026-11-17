@@ -19,6 +19,8 @@ export interface Settings {
   cluster_threshold: number;
   run_requested: boolean;
   show_ad_placeholders: boolean;
+  schedule_hours: number[]; // ore (Europe/Rome) in cui eseguire il controllo; vuoto = ogni fetch_interval_min
+  last_scheduled_slot: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -46,6 +48,8 @@ export const DEFAULT_SETTINGS: Settings = {
   cluster_threshold: 0.32,
   run_requested: false,
   show_ad_placeholders: true,
+  schedule_hours: [6, 12, 18],
+  last_scheduled_slot: "",
 };
 
 export async function getSettings(): Promise<Settings> {

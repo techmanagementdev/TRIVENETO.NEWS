@@ -34,6 +34,8 @@ _Aggiornato: 17/11/2026 (sessione 1)_
 - Sito: colonna laterale negli articoli, annuncio dentro il testo, tempi relativi, tempo di lettura, ricerca nel menu
 - Parole chiave sensibili ampliate (minacce, bombe, attentati, feriti, scomparse…): sempre in revisione
 
+- Aggiornamento notizie: alle 06, 12 e 18 (ora italiana), modificabile in Impostazioni; prezzi AI per la stima costi aggiornati a 2/10 $ per milione di token
+
 ## Problemi aperti / da fare
 - Repository da rendere privato (impostazione GitHub non modificabile da Claude in questo ambiente)
 - Dominio: `triveneto.news` e `www.triveneto.news` aggiunti su Railway (17/11). In attesa dei record DNS presso il registrar:

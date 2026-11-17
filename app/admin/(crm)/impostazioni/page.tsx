@@ -41,7 +41,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <div className="panel">
           <h2>Ricerca e selezione</h2>
           <div className="grid2">
-            {num("fetch_interval_min", "Frequenza di ricerca (minuti)")}
+            <label>Orari di aggiornamento (ora italiana)
+              <input name="schedule_hours" defaultValue={s.schedule_hours.join(", ")} placeholder="Es. 6, 12, 18" />
+              <span className="small" style={{ fontWeight: 400 }}>Ore separate da virgola. Lascia vuoto per aggiornare ogni N minuti (campo sotto).</span>
+            </label>
+            {num("fetch_interval_min", "Se gli orari sono vuoti: frequenza (minuti)")}
             {num("min_priority", "Priorità minima per generare un articolo (0-100)")}
             {num("min_independent_sources", "Fonti indipendenti minime")}
             {num("max_articles_per_run", "Articoli massimi per controllo")}
