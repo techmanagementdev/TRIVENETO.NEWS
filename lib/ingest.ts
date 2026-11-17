@@ -41,7 +41,11 @@ export async function readRss(url: string): Promise<FeedEntry[]> {
 
 export async function readGdelt(url: string): Promise<FeedEntry[]> {
   // GDELT chiede al massimo una richiesta ogni 5 secondi
-  const res = await safeFetchText(url, { accept: "application/json", minGapMs: 6000 });
+  let res = await safeFetchText(url, { accept: "application/json", minGapMs: 10000, timeoutMs: 40000 });
+  if (res.status === 429) {
+    await new Promise((r) => setTimeout(r, 20000));
+    res = await safeFetchText(url, { accept: "application/json", minGapMs: 10000, timeoutMs: 40000 });
+  }
   if (res.status >= 400) throw new Error(`HTTP ${res.status}`);
   let data: any;
   try {
